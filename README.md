@@ -1,11 +1,12 @@
 # Welcome to 9th Dimension
 
-### Making Impossible into Creative Playgrounds
+### Turning Impossible into Creative Playgrounds
 
 ---
-Current Projects:
+Current Musings:
 - AI4C - Artificial Intelligence for Creatives
 - TBD - Game Development Project
+  
 ---
 
 
