@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9th Dimension</title>
+    <title>9th-dimension</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,13 +13,9 @@
         }
 
         body {
-            background: white;
             overflow: hidden;
-            font-family: 'Arial', sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            background: white;
         }
 
         canvas {
@@ -29,11 +26,16 @@
         }
 
         .content {
-            position: relative;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 2;
             text-align: center;
-            padding: 2rem;
             color: black;
+            width: 100%;
+            padding: 2rem;
+            pointer-events: none;
         }
 
         h1 {
@@ -50,94 +52,146 @@
     </style>
 </head>
 <body>
-    <canvas id="particleCanvas"></canvas>
     <div class="content">
-        <h1>9th Dimension</h1>
-        <div class="tagline">Turning impossible into creative playgrounds</div>
+        <h1>9th-dimension</h1>
+        <div class="tagline">I M P O S S I B L E P L A Y G R O U N D S</div>
     </div>
 
     <script>
-        const canvas = document.getElementById('particleCanvas');
-        const ctx = canvas.getContext('2d');
+        let scene, camera, renderer;
+        let cubes = [];
+        let mouseX = 0, mouseY = 0;
+        const bounds = 30;
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        let particles = [];
-        const particleCount = 100;
-        let mouse = { x: width / 2, y: height / 2 };
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2 + 1;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.density = Math.random() * 30 + 1;
-            }
-
-            draw() {
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fill();
+        class Cube {
+            constructor(position) {
+                const geometry = new THREE.BoxGeometry(3, 3, 3);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.15,
+                    wireframe: true
+                });
+                
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.position.copy(position);
+                
+                // Velocity components
+                this.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1
+                );
+                
+                // Rotation velocity
+                this.rotationVelocity = new THREE.Vector3(
+                    Math.random() * 0.02 - 0.01,
+                    Math.random() * 0.02 - 0.01,
+                    Math.random() * 0.02 - 0.01
+                );
             }
 
             update() {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let forceDirectionX = dx / distance;
-                let forceDirectionY = dy / distance;
-                let maxDistance = 100;
-                let force = (maxDistance - distance) / maxDistance;
-                let directionX = forceDirectionX * force * this.density;
-                let directionY = forceDirectionY * force * this.density;
+                // Update position
+                this.mesh.position.add(this.velocity);
+                
+                // Update rotation
+                this.mesh.rotation.x += this.rotationVelocity.x;
+                this.mesh.rotation.y += this.rotationVelocity.y;
+                this.mesh.rotation.z += this.rotationVelocity.z;
+                
+                // Wrap around bounds
+                if (this.mesh.position.x > bounds) this.mesh.position.x = -bounds;
+                if (this.mesh.position.x < -bounds) this.mesh.position.x = bounds;
+                if (this.mesh.position.y > bounds) this.mesh.position.y = -bounds;
+                if (this.mesh.position.y < -bounds) this.mesh.position.y = bounds;
+                if (this.mesh.position.z > bounds) this.mesh.position.z = -bounds;
+                if (this.mesh.position.z < -bounds) this.mesh.position.z = bounds;
+            }
 
-                if (distance < maxDistance) {
-                    this.x -= directionX;
-                    this.y -= directionY;
-                } else {
-                    if (this.x !== this.baseX) {
-                        let dx = this.x - this.baseX;
-                        this.x -= dx/10;
-                    }
-                    if (this.y !== this.baseY) {
-                        let dy = this.y - this.baseY;
-                        this.y -= dy/10;
-                    }
+            applyForce(force) {
+                this.velocity.add(force);
+                // Limit maximum velocity
+                const maxSpeed = 0.3;
+                if (this.velocity.length() > maxSpeed) {
+                    this.velocity.normalize().multiplyScalar(maxSpeed);
                 }
             }
         }
 
         function init() {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0xffffff, 1);
+            document.body.appendChild(renderer.domElement);
+
+            // Create 9 cubes in different positions
+            for (let i = 0; i < 9; i++) {
+                const position = new THREE.Vector3(
+                    (Math.random() - 0.5) * bounds * 1.5,
+                    (Math.random() - 0.5) * bounds * 1.5,
+                    (Math.random() - 0.5) * bounds * 1.5
+                );
+                const cube = new Cube(position);
+                cubes.push(cube);
+                scene.add(cube.mesh);
             }
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(0, 1, 1);
+            scene.add(directionalLight);
+
+            camera.position.z = 40;
+
+            document.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onMouseMove(event) {
+            const newMouseX = (event.clientX - window.innerWidth / 2) / window.innerWidth;
+            const newMouseY = (event.clientY - window.innerHeight / 2) / window.innerHeight;
+            
+            // Calculate mouse movement vector
+            const mouseForce = new THREE.Vector3(
+                (newMouseX - mouseX) * 0.05,
+                -(newMouseY - mouseY) * 0.05,
+                0
+            );
+            
+            // Apply force to all cubes
+            cubes.forEach(cube => {
+                cube.applyForce(mouseForce);
+            });
+            
+            mouseX = newMouseX;
+            mouseY = newMouseY;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         function animate() {
-            ctx.clearRect(0, 0, width, height);
-            for (let particle of particles) {
-                particle.update();
-                particle.draw();
-            }
             requestAnimationFrame(animate);
+
+            // Update all cubes
+            cubes.forEach(cube => cube.update());
+
+            // Subtle camera movement
+            camera.position.x = Math.sin(Date.now() * 0.0005) * 5;
+            camera.position.y = Math.cos(Date.now() * 0.0005) * 5;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
         }
-
-        window.addEventListener('mousemove', (event) => {
-            mouse.x = event.x;
-            mouse.y = event.y;
-        });
-
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            init();
-        });
 
         init();
         animate();
