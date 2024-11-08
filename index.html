@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9th-dimension</title>
+    <title>9th Dimension</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.cdnjs.com/css2?family=Chakra+Petch:wght@300;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,8 +15,18 @@
 
         body {
             overflow: hidden;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Chakra Petch', sans-serif;
             background: white;
+        }
+
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
         }
 
         canvas {
@@ -23,6 +34,7 @@
             top: 0;
             left: 0;
             z-index: 1;
+            opacity: 0.7;
         }
 
         .content {
@@ -32,7 +44,7 @@
             transform: translate(-50%, -50%);
             z-index: 2;
             text-align: center;
-            color: black;
+            color: white;
             width: 100%;
             padding: 2rem;
             pointer-events: none;
@@ -41,20 +53,56 @@
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
-            font-weight: 700;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
 
         .tagline {
             font-size: 1.5rem;
             font-weight: 300;
             opacity: 0.9;
+            letter-spacing: 0.05em;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            pointer-events: auto;
+        }
+
+        .button {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid white;
+            background: transparent;
+            color: white;
+            font-family: 'Chakra Petch', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .button:hover {
+            background: white;
+            color: black;
         }
     </style>
 </head>
 <body>
+    <img src="/api/placeholder/1920/1080" alt="Background" class="background-image">
     <div class="content">
-        <h1>9th-dimension</h1>
-        <div class="tagline">I M P O S S I B L E P L A Y G R O U N D S</div>
+        <h1>9th Dimension</h1>
+        <div class="tagline">impossible playgrounds</div>
+        <div class="button-container">
+            <a href="#" class="button">ABOUT</a>
+            <a href="#" class="button">AI4C</a>
+            <a href="#" class="button">GITHUB</a>
+        </div>
     </div>
 
     <script>
@@ -76,14 +124,12 @@
                 this.mesh = new THREE.Mesh(geometry, material);
                 this.mesh.position.copy(position);
                 
-                // Velocity components
                 this.velocity = new THREE.Vector3(
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1,
                     (Math.random() - 0.5) * 0.1
                 );
                 
-                // Rotation velocity
                 this.rotationVelocity = new THREE.Vector3(
                     Math.random() * 0.02 - 0.01,
                     Math.random() * 0.02 - 0.01,
@@ -92,15 +138,12 @@
             }
 
             update() {
-                // Update position
                 this.mesh.position.add(this.velocity);
                 
-                // Update rotation
                 this.mesh.rotation.x += this.rotationVelocity.x;
                 this.mesh.rotation.y += this.rotationVelocity.y;
                 this.mesh.rotation.z += this.rotationVelocity.z;
                 
-                // Wrap around bounds
                 if (this.mesh.position.x > bounds) this.mesh.position.x = -bounds;
                 if (this.mesh.position.x < -bounds) this.mesh.position.x = bounds;
                 if (this.mesh.position.y > bounds) this.mesh.position.y = -bounds;
@@ -111,7 +154,6 @@
 
             applyForce(force) {
                 this.velocity.add(force);
-                // Limit maximum velocity
                 const maxSpeed = 0.3;
                 if (this.velocity.length() > maxSpeed) {
                     this.velocity.normalize().multiplyScalar(maxSpeed);
@@ -124,10 +166,9 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0xffffff, 1);
+            renderer.setClearColor(0xffffff, 0);
             document.body.appendChild(renderer.domElement);
 
-            // Create 9 cubes in different positions
             for (let i = 0; i < 9; i++) {
                 const position = new THREE.Vector3(
                     (Math.random() - 0.5) * bounds * 1.5,
@@ -139,7 +180,6 @@
                 scene.add(cube.mesh);
             }
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
@@ -157,14 +197,12 @@
             const newMouseX = (event.clientX - window.innerWidth / 2) / window.innerWidth;
             const newMouseY = (event.clientY - window.innerHeight / 2) / window.innerHeight;
             
-            // Calculate mouse movement vector
             const mouseForce = new THREE.Vector3(
                 (newMouseX - mouseX) * 0.05,
                 -(newMouseY - mouseY) * 0.05,
                 0
             );
             
-            // Apply force to all cubes
             cubes.forEach(cube => {
                 cube.applyForce(mouseForce);
             });
@@ -182,10 +220,8 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Update all cubes
             cubes.forEach(cube => cube.update());
 
-            // Subtle camera movement
             camera.position.x = Math.sin(Date.now() * 0.0005) * 5;
             camera.position.y = Math.cos(Date.now() * 0.0005) * 5;
             camera.lookAt(scene.position);
